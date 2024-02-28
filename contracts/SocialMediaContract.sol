@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "./SocialMediaFactory.sol";
+
 contract SocialMedia {
     uint256 public latestTweetId;
     uint256 public newGroupId;
+
     struct Post {
         uint256 postId;
         address author;
@@ -32,7 +35,18 @@ contract SocialMedia {
 
     mapping(uint256 => Group) public groups;
 
+
+  NftFactory public nftFactoryContract; // Instance of the NftFactory contract
+
+    constructor(address _nftFactoryAddress) {
+        nftFactoryContract = NftFactory(_nftFactoryAddress);
+    }
+
+
+
     function signUp(string memory _username) external {
+    require(bytes(_username).length > 0, "Username cannot be empty");
+
         User storage _user = users[msg.sender];
 
         _user.userAddress = msg.sender;
@@ -40,12 +54,12 @@ contract SocialMedia {
         _user.username = _username;
 
         users[msg.sender];
-        // require(!hasRegistered[msg.sender]);
+
         hasRegistered[msg.sender] = true;
     }
 
     function signIn() external {
-        require(hasRegistered[msg.sender]);
+         require(hasRegistered[msg.sender], "User not registered");
         hasRegistered[msg.sender] = true;
     }
 
@@ -54,6 +68,9 @@ contract SocialMedia {
         latestTweetId++;
         tweets[latestTweetId] = Post(latestTweetId, msg.sender, _content, 0);
         users[msg.sender].userTweets[latestTweetId] = latestTweetId;
+
+            // Call the createNFT function of the NftFactory contract to mint a token
+        nftFactoryContract.createNFT(msg.sender, latestTweetId, "URI_TO_YOUR_NFT_METADATA");
     }
 
     // Function to create a group
@@ -61,5 +78,20 @@ contract SocialMedia {
         newGroupId++;
         groups[newGroupId] = Group(newGroupId, _groupName, new address[](0));
         users[msg.sender].userGroups.push(newGroupId);
+    }
+
+       // Function to update a post
+    function updatePost(uint256 _postId, string memory _newContent) public {
+        require(tweets[_postId].postId != 0, "Post does not exist");
+        require(tweets[_postId].author == msg.sender, "Only the author can update the post");
+
+        tweets[_postId].content = _newContent;
+    }
+
+      // Function to delete a post
+    function deletePost(uint256 _postId) public {
+        require(tweets[_postId].postId != 0, "Post does not exist");
+        require(tweets[_postId].author == msg.sender, "Only author can delete");
+        delete tweets[_postId];
     }
 }
