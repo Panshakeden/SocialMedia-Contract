@@ -1,22 +1,20 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
 
-  const lockedAmount = ethers.parseEther("0.001");
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const SocialMedia= await ethers.deployContract("SocialMediaFactory");
+  await SocialMedia.waitForDeployment();
+  console.log(`Factory contract deployed to ${SocialMedia.target}`);
 
-  await lock.waitForDeployment();
+  const SocialMediaFactory= await ethers.deployContract("SocialMediaFactory",[SocialMedia]);
+  const socialMediaFactory=await SocialMediaFactory.waitForDeployment();
+  console.log(`Factory contract deployed to ${socialMediaFactory.target}`);
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  const SocialMediaContract = await ethers.deployContract("SocialMediaContract", [socialMediaFactory.target]);
+  const socialMediaContract=await SocialMediaContract.waitForDeployment();
+  console.log(`Social media  deployed to ${socialMediaContract.target}`);
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere

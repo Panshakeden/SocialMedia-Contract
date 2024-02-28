@@ -6,15 +6,14 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CaveToken is ERC721, ERC721URIStorage, Ownable {
-    constructor(address initialOwner)
+contract CaveToken is ERC721, ERC721URIStorage {
+    constructor()
         ERC721("CaveToken", "CTK")
-        Ownable(initialOwner)
+
     {}
 
     function safeMint(address to, uint256 tokenId, string memory uri)
         public
-        onlyOwner
     {
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
