@@ -6,12 +6,15 @@ import "./SocialMediaFactory.sol";
 contract SocialMedia {
     uint256 public latestTweetId;
     uint256 public newGroupId;
+    uint256 public likesCount;
 
     struct Post {
         uint256 postId;
         address author;
+        string description;
         string content;
         uint256 commentCount;
+        bool likes;
     }
 
     struct User {
@@ -37,19 +40,16 @@ contract SocialMedia {
 
     User[] myUsers;
 
-
-  NftFactory public nftFactoryContract; // Instance of the NftFactory contract
+    NftFactory public nftFactoryContract; // Instance of the NftFactory contract
 
     constructor(address _nftFactoryAddress) {
         nftFactoryContract = NftFactory(_nftFactoryAddress);
     }
 
-
-
     function signUp(string memory _username) external {
-    require(msg.sender != address(0));
-    require(bytes(_username).length > 0, "Username cannot be empty");
-     require(!hasRegistered[msg.sender], "User not registered");
+        require(msg.sender != address(0));
+        require(bytes(_username).length > 0, "Username cannot be empty");
+        require(!hasRegistered[msg.sender], "User not registered");
 
         User storage _user = users[msg.sender];
 
@@ -59,28 +59,41 @@ contract SocialMedia {
 
         users[msg.sender];
 
-       myUsers.push(_user);
+        myUsers.push(_user);
 
         // hasRegistered[msg.sender] = true;
     }
 
     function signIn() public {
         require(msg.sender != address(0));
-         require(hasRegistered[msg.sender], "User not registered");
+        require(hasRegistered[msg.sender], "User not registered");
         hasRegistered[msg.sender] = true;
     }
 
     // Function to create a tweet
-    function createPost(string memory _content, string memory uri) public {
+    function createPost(
+        string memory _description,
+        string memory _content,
+        string memory uri
+    ) public {
         require(msg.sender != address(0));
         require(hasRegistered[msg.sender], "User not registered");
-         signIn();
+
+        signIn();
         latestTweetId++;
-        tweets[latestTweetId] = Post(latestTweetId, msg.sender, _content, 0);
+        tweets[latestTweetId] = Post(
+            latestTweetId,
+            msg.sender,
+            _description,
+            _content,
+            0,
+            false
+        );
+        tweets[latestTweetId].likes = true;
+        likesCount++;
         // users[msg.sender].userTweets[latestTweetId] = latestTweetId;
 
-         nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
-       
+        nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
     }
 
     // Function to create a group
@@ -93,18 +106,21 @@ contract SocialMedia {
         users[msg.sender].userGroups.push(newGroupId);
     }
 
-       // Function to update a post
+    // Function to update a post
     function updatePost(uint256 _postId, string memory _newContent) public {
         require(msg.sender != address(0));
-         signIn();
-         require(hasRegistered[msg.sender], "User not registered");
+        signIn();
+        require(hasRegistered[msg.sender], "User not registered");
         require(tweets[_postId].postId != 0, "Post does not exist");
-        require(tweets[_postId].author == msg.sender, "Only the author can update the post");
+        require(
+            tweets[_postId].author == msg.sender,
+            "Only the author can update the post"
+        );
 
         tweets[_postId].content = _newContent;
     }
 
-      // Function to delete a post
+    // Function to delete a post
     function deletePost(uint256 _postId) public {
         require(msg.sender != address(0));
         require(tweets[_postId].postId != 0, "Post does not exist");
