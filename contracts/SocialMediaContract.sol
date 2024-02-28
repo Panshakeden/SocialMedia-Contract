@@ -15,7 +15,7 @@ contract SocialMedia {
         string description;
         string content;
         uint256 commentCount;
-        bool likes;
+        uint likes;
     }
 
     struct User {
@@ -90,9 +90,10 @@ contract SocialMedia {
             _description,
             _content,
             0,
-            false
+            0
+
         );
-        tweets[latestTweetId].likes = true;
+        tweets[latestTweetId].likes++;
         likesCount++;
         allTweetsArray.push(tweets[latestTweetId]);
         // users[msg.sender].userTweets[latestTweetId] = latestTweetId;
