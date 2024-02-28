@@ -3,10 +3,9 @@ pragma solidity ^0.8.9;
 
 import "./SocialMediaFactory.sol";
 
-contract SocialMedia {
+contract SocialMediaContract {
     uint256 public latestTweetId;
     uint256 public newGroupId;
-    uint256 public likesCount;
     address owner;
 
     struct Post {
@@ -42,10 +41,10 @@ contract SocialMedia {
     User[] myUsers;
     Post[] allTweetsArray;
 
-    NftFactory public nftFactoryContract; // Instance of the NftFactory contract
+    SocialMediaFactory public nftFactoryContract;
 
     constructor(address _nftFactoryAddress) {
-        nftFactoryContract = NftFactory(_nftFactoryAddress);
+        nftFactoryContract = SocialMediaFactory(_nftFactoryAddress);
         owner = msg.sender;
     }
 
@@ -94,10 +93,8 @@ contract SocialMedia {
 
         );
         tweets[latestTweetId].likes++;
-        likesCount++;
         allTweetsArray.push(tweets[latestTweetId]);
-        // users[msg.sender].userTweets[latestTweetId] = latestTweetId;
-
+        
         nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
     }
 
@@ -106,6 +103,7 @@ contract SocialMedia {
         require(msg.sender != address(0));
         signIn();
         require(hasRegistered[msg.sender], "User not registered");
+
         newGroupId++;
         groups[newGroupId] = Group(newGroupId, _groupName, new address[](0));
         users[msg.sender].userGroups.push(newGroupId);

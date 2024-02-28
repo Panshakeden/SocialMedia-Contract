@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./SocialMedia.sol";
+import "./SocialMediaNFT.sol";
 
-contract NftFactory  {
-    CaveToken public nftContract;
+contract SocialMediaFactory  {
+    SocialMediaNFT public nftContract;
     
-    constructor(CaveToken _nftContract) {
+    constructor(SocialMediaNFT _nftContract) {
         nftContract = _nftContract;
     }
     
