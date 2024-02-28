@@ -45,7 +45,9 @@ contract SocialMedia {
 
 
     function signUp(string memory _username) external {
+    require(msg.sender != address(0));
     require(bytes(_username).length > 0, "Username cannot be empty");
+     require(!hasRegistered[msg.sender], "User not registered");
 
         User storage _user = users[msg.sender];
 
@@ -58,23 +60,30 @@ contract SocialMedia {
         hasRegistered[msg.sender] = true;
     }
 
-    function signIn() external {
+    function signIn() public {
+        require(msg.sender != address(0));
          require(hasRegistered[msg.sender], "User not registered");
         hasRegistered[msg.sender] = true;
     }
 
     // Function to create a tweet
-    function createPost(string memory _content) public {
+    function createPost(string memory _content, string memory uri) public {
+        require(msg.sender != address(0));
+        require(hasRegistered[msg.sender], "User not registered");
+         signIn();
         latestTweetId++;
         tweets[latestTweetId] = Post(latestTweetId, msg.sender, _content, 0);
         users[msg.sender].userTweets[latestTweetId] = latestTweetId;
 
-            // Call the createNFT function of the NftFactory contract to mint a token
-        nftFactoryContract.createNFT(msg.sender, latestTweetId, "URI_TO_YOUR_NFT_METADATA");
+         nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
+       
     }
 
     // Function to create a group
     function createGroup(string memory _groupName) public {
+        require(msg.sender != address(0));
+        signIn();
+        require(hasRegistered[msg.sender], "User not registered");
         newGroupId++;
         groups[newGroupId] = Group(newGroupId, _groupName, new address[](0));
         users[msg.sender].userGroups.push(newGroupId);
@@ -82,6 +91,9 @@ contract SocialMedia {
 
        // Function to update a post
     function updatePost(uint256 _postId, string memory _newContent) public {
+        require(msg.sender != address(0));
+         signIn();
+         require(hasRegistered[msg.sender], "User not registered");
         require(tweets[_postId].postId != 0, "Post does not exist");
         require(tweets[_postId].author == msg.sender, "Only the author can update the post");
 
@@ -90,6 +102,7 @@ contract SocialMedia {
 
       // Function to delete a post
     function deletePost(uint256 _postId) public {
+        require(msg.sender != address(0));
         require(tweets[_postId].postId != 0, "Post does not exist");
         require(tweets[_postId].author == msg.sender, "Only author can delete");
         delete tweets[_postId];
