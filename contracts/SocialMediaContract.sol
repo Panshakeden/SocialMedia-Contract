@@ -7,6 +7,7 @@ contract SocialMedia {
     uint256 public latestTweetId;
     uint256 public newGroupId;
     uint256 public likesCount;
+    address owner;
 
     struct Post {
         uint256 postId;
@@ -39,11 +40,13 @@ contract SocialMedia {
     mapping(uint256 => Group) public groups;
 
     User[] myUsers;
+    Post[] allTweetsArray;
 
     NftFactory public nftFactoryContract; // Instance of the NftFactory contract
 
     constructor(address _nftFactoryAddress) {
         nftFactoryContract = NftFactory(_nftFactoryAddress);
+        owner = msg.sender;
     }
 
     function signUp(string memory _username) external {
@@ -91,6 +94,7 @@ contract SocialMedia {
         );
         tweets[latestTweetId].likes = true;
         likesCount++;
+        allTweetsArray.push(tweets[latestTweetId]);
         // users[msg.sender].userTweets[latestTweetId] = latestTweetId;
 
         nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
@@ -129,6 +133,19 @@ contract SocialMedia {
     }
 
     function getAllUsers() external view returns (User[] memory) {
+        require(msg.sender != address(0));
+        OnlyOnwer();
         return myUsers;
+    }
+
+    function getAllPost() external returns (Post[] memory) {
+        require(msg.sender != address(0));
+        signIn();
+        require(hasRegistered[msg.sender], "User not registered");
+        return allTweetsArray;
+    }
+
+    function OnlyOnwer() private view {
+        require(owner == msg.sender, "Your are not the owner");
     }
 }
