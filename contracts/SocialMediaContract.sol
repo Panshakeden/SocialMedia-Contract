@@ -18,7 +18,7 @@ contract SocialMedia {
         address userAddress;
         string username;
         uint256[] userGroups;
-        mapping(uint256 => uint256) userTweets;
+        // mapping(uint256 => uint256) userTweets;
     }
 
     struct Group {
@@ -34,6 +34,8 @@ contract SocialMedia {
     mapping(address => User) public users;
 
     mapping(uint256 => Group) public groups;
+
+    User[] myUsers;
 
 
   NftFactory public nftFactoryContract; // Instance of the NftFactory contract
@@ -57,7 +59,9 @@ contract SocialMedia {
 
         users[msg.sender];
 
-        hasRegistered[msg.sender] = true;
+       myUsers.push(_user);
+
+        // hasRegistered[msg.sender] = true;
     }
 
     function signIn() public {
@@ -73,7 +77,7 @@ contract SocialMedia {
          signIn();
         latestTweetId++;
         tweets[latestTweetId] = Post(latestTweetId, msg.sender, _content, 0);
-        users[msg.sender].userTweets[latestTweetId] = latestTweetId;
+        // users[msg.sender].userTweets[latestTweetId] = latestTweetId;
 
          nftFactoryContract.createNFT(msg.sender, latestTweetId, uri);
        
@@ -106,5 +110,9 @@ contract SocialMedia {
         require(tweets[_postId].postId != 0, "Post does not exist");
         require(tweets[_postId].author == msg.sender, "Only author can delete");
         delete tweets[_postId];
+    }
+
+    function getAllUsers() external view returns (User[] memory) {
+        return myUsers;
     }
 }
